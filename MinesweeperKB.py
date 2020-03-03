@@ -18,7 +18,11 @@ class KB():
                 return
             else:
                 self.mismatched_tiles.append(tile)
-                print(self.mismatched_tiles)
+                for i in range(len(self.mismatched_tiles)):
+                    print("print the mismatch tiles: x = " 
+                    + str(self.mismatched_tiles[i].x) +" y = "+ 
+                    str(self.mismatched_tiles[i].y) + " adj_mines = "+
+                    str(self.mismatched_tiles[i].adj_mines))
 
     def isValid(self, x, y):
                 
@@ -41,7 +45,8 @@ class KB():
                     x, y = unsat_tile.x+i, unsat_tile.y+j
                     if (self.isValid(x, y) and self.tile_arr[x][y].is_mined is ID.hidden):
                         
-                        self.tile_arr[x][y].is_mined = ID.false #the tile is not mined
+                        #the tile is not mined
+                        self.tile_arr[x][y].is_mined = ID.false 
                         potential_mines.add(self.tile_arr[x][y])
         
         #condition of the possible mines: isValid, hidden.
@@ -77,7 +82,7 @@ class KB():
             if local_sat <= 0:
                 continue
 
-            elif local_sat == 0 and self.check_global_sat:
+            elif local_sat == 0 and self.check_all_grid:
                 return True
 
             elif local_sat >= 0:
@@ -109,7 +114,7 @@ class KB():
 
     def check_local_grid(self, tile):
 
-        under_satisfied = False
+        lessThanZero = False
         # Count adjacent mines of neighbors of tile
         for i in [-1,0,1]:
             for j in [-1,0,1]:
@@ -121,12 +126,14 @@ class KB():
                     if count > 0:
                         # too many mines, oversatisfied
                         return 1
+                   
                     elif count < 0:
                         # under satisfied at one point, but don't return
                         # since it still may over satisfy at one point
-                        under_satisfied = True
+                        lessThanZero = True
+        
         # if it is not under satisfied then it's satisfied locally
-        if under_satisfied:
+        if lessThanZero:
             return -1
         else:
             return 0
@@ -145,10 +152,10 @@ class KB():
                         #remove when adj_tile == 1?
                         self.mismatched_tiles.remove(adj_tile)
 
-    def printGrid(self):
+    def drawGrid(self):
         t = ""
-        for y in range(self.height):
-            for x in range(self.width):
+        for x in range(self.width):
+            for y in range(self.height):
                 tile = self.tile_arr[x][y]
                 
                 if tile.is_mined is ID.true:
@@ -163,8 +170,7 @@ class KB():
                         t += "C "
                     elif tile.blowup is True:
                         t += "B "
-                    else:
-                        #covered
+                    else: #covered
                         t += "X "
             t += "\n"
         print(t)
@@ -175,7 +181,8 @@ class KB():
         for i in [-1,0,1]:
             for j in [-1,0,1]:
                 x, y = tile.x+i, tile.y+j
-                if (self.isValid(x, y) and self.tile_arr[x][y].is_mined is ID.hidden 
+                if (self.isValid(x, y) 
+                    and self.tile_arr[x][y].is_mined is ID.hidden 
                         and not(x == tile.x and y == tile.y)):
                     adj_tiles.append(self.tile_arr[x][y])
         return adj_tiles
