@@ -1,4 +1,4 @@
-from MinesweeperKB import KB, ID
+from KnowledgeBase import KB, ID
 from GameSetting import GameSetting
 from copy import deepcopy
 import random
@@ -18,9 +18,9 @@ class MineSweeperAgent:
 
     def startGame(self):
         # decide on which tile to query
-        # perform PBC if nothing to safely visit
+        # perform PBC if nothing t
+        # o safely visit
         # guess if there is nothing clear and PBC on every viable option
-        # First guess is middle of game
         unvisited_clr_tiles = set()
         fringe = set() # unknown tiles that are adjacent to discovered nodes
         
@@ -70,12 +70,12 @@ class MineSweeperAgent:
                         if is_tile_mined is ID.true:
                             self.kb.flagOnTile(tile)
                             print(tile.coord_str()+ " flagged as mine")
-                            self.kb.drawGrid()
+                            #self.kb.drawGrid()
                         elif is_tile_mined is ID.false:
                             tile.is_mined = ID.false
                             unvisited_clr_tiles.add(tile)
                             print(tile.coord_str()+ " flagged as clear")
-                            self.kb.drawGrid()
+                            #self.kb.drawGrid()
                         removing_tiles.append(tile)
                         continue
 

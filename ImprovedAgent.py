@@ -1,10 +1,10 @@
-from MinesweeperKB import KB, ID
+from KnowledgeBase import KB, ID
 from GameSetting import GameSetting
 from copy import deepcopy
 import random
 from enum import Enum
 
-class ImprovedAgent:
+class MineSweeperAgent:
 
     def __init__(self):
         height,width,num_mines = (5,5,5)
@@ -17,20 +17,17 @@ class ImprovedAgent:
         self.won = False
 
     def startGame(self):
-        '''
-        Decide the random tile to query and we examine the tile is safe to declare 
-        as mine or unvisited cleaer tile.
-        Once we have to guess the tile, we select one tile from the fringe.
-        '''
-        
-        #clear tiles are basically unvisited clear tiles
-        clear_tiles = set()
+        # decide on which tile to query
+        # perform PBC if nothing to safely visit
+        # guess if there is nothing clear and PBC on every viable option
+        # First guess is middle of game
+        unvisited_clr_tiles = set()
         fringe = set() # unknown tiles that are adjacent to discovered nodes
         
         #randomly starts at the cell of the grid
         randX, randY= random.randint(0, self.width-1), random.randint(0, self.height-1)
-        #first_tile = self.checkQuery(0, 0)
-        first_tile = self.checkQuery(randX, randY)
+        first_tile = self.checkQuery(2, 2)
+        #first_tile = self.checkQuery(randX, randY)
         
         #Now assign below four var and lists to keep tracking the position of the uncovering cell
         prev_tile = first_tile
@@ -43,20 +40,20 @@ class ImprovedAgent:
         while not self.gameover:
             print("")
 
-            if len(clear_tiles) != 0:
+            if len(unvisited_clr_tiles) != 0:
                 # If there are any safe nodes to go to make those moves
                 
-                print("Clear tiles:" + str(len(clear_tiles)))                
+                print("Clear tiles:" + str(len(unvisited_clr_tiles)))                
                 print("Current state of the knowledge base")
                 self.kb.drawGrid()
                 print("--------------------------------------")
                 
-                tile = clear_tiles.pop()
+                tile = unvisited_clr_tiles.pop()
                 self.checkQuery(tile.x,tile.y)
-                print("Visiting tile: "+tile.coord_str())
+                print("Visiting tile: "+tile.coord_str()) #print("Visiting tile adj_mines: " + tile.adj_mines)
                 if(self.gameover is True):
                     tile.blowup = True
-                    print("TERMINATE THE GAME")
+                    print("terminate")
                     break
                 adj_unvisited = self.kb.get_hidden_adj_tiles(tile)
                 for t in adj_unvisited:
@@ -65,39 +62,36 @@ class ImprovedAgent:
 
             '''first_tile starts here when the unvis_clr_tileSet is empty'''
             if len(fringe) != 0:
-                # There is no safe tile to visit according to the the fringe
+                # Nowhere safe rn to go to so search fringe for safe node
                 removing_tiles = []
                 for tile in fringe:
-                    is_tile_mined = self.test_knowledgebase(tile.x,tile.y)
-                    
+                    is_tile_mined = self.verify_knowledgebase(tile.x,tile.y)
                     if is_tile_mined is not ID.hidden:
-                        
                         if is_tile_mined is ID.true:
                             self.kb.flagOnTile(tile)
                             print(tile.coord_str()+ " flagged as mine")
                             self.kb.drawGrid()
-                        
-                        elif is_tile_mined is ID.false:                       
+                        elif is_tile_mined is ID.false:
                             tile.is_mined = ID.false
-                            clear_tiles.add(tile)
+                            unvisited_clr_tiles.add(tile)
                             print(tile.coord_str()+ " flagged as clear")
                             self.kb.drawGrid()
-
                         removing_tiles.append(tile)
                         continue
 
                 for tile in removing_tiles:
                     fringe.remove(tile)
                     
-                if len(clear_tiles) == 0 and len(fringe) != 0:
-                    #Guess one tile from the from the hiddle tiles under the condition 
-                    #if there are no more clear tiles surrounded by the safe tiles.
-                    guess = fringe.pop()
-                    print("guessing: "+str(guess.x)+','+str(guess.y))
-                    clear_tiles.add(guess)
+                if len(unvisited_clr_tiles) == 0 and len(fringe) != 0:
+                    # Have to guess because we only have hidden tiles left,
+                    # no cleared tiles (predicate false or true)
+                    #print("guess - nowhere safe to go")
+                    guess_tile = fringe.pop()
+                    print("guessing: "+str(guess_tile.x)+','+str(guess_tile.y))
+                    unvisited_clr_tiles.add(guess_tile)
 
                 
-            elif len(clear_tiles) == 0:
+            elif len(unvisited_clr_tiles) == 0:
                 
                 candidates = []
                 for i in range(len(self.kb.tile_arr)):
@@ -111,7 +105,7 @@ class ImprovedAgent:
                 print("guess -surroundded by mines")
                 rand_index = random.randint(0, len(candidates) - 1)
                 chosen = candidates[rand_index]
-                clear_tiles.add(chosen)
+                unvisited_clr_tiles.add(chosen)
 
         if self.won:
             print("WINNER WINNER CHICKEN DINNER")
@@ -140,7 +134,7 @@ class ImprovedAgent:
         self.checkNum(num, cur_tile)
         return cur_tile
 
-    def test_knowledgebase(self, x, y):
+    def verify_knowledgebase(self, x, y):
         test_kb = deepcopy(self.kb)
         cur_tile = test_kb.tile_arr[x][y]
         # Returns a predicate on if the arg tile is mined
@@ -164,18 +158,15 @@ class ImprovedAgent:
 
 
         if P and notP:
-            self.kb.drawGrid()
             return ID.hidden
         elif P and not notP:
-            self.kb.drawGrid()
             return ID.true
         elif not P and notP:
-            self.kb.drawGrid()
             return ID.false
 
 
 if __name__ == '__main__':
 
     
-    improved_agent = ImprovedAgent()
-    improved_agent.startGame()
+    agent = MineSweeperAgent()
+    agent.startGame()
