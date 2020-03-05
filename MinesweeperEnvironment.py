@@ -47,6 +47,9 @@ cMines = 0
 # game status
 game_Status = -1
 
+# constants for game
+ROWS = COLUMNS = 10
+MINES = 15
 
 class Button(object):
     def __init__(self):
@@ -103,20 +106,20 @@ def infoBar():
         text_y = text.get_rect().height
         screen.blit(text, ((350 - (text_x / 2)), (50 - (text_y / 2))))
     elif game_Status == 1:  # Winner
-        text = font.render("Winner", True, BLACK)
+        text = font.render("Completed", True, BLACK)
         text_x = text.get_rect().width
         text_y = text.get_rect().height
         screen.blit(text, ((150 - (text_x / 2)), (50 - (text_y / 2))))
-    elif game_Status == 2:  # Loser
-        text = font.render("Loser", True, BLACK)
+    elif game_Status == 2:  # Hit a mine
+        text = font.render("Hit a Mine", True, BLACK)
         text_x = text.get_rect().width
         text_y = text.get_rect().height
         screen.blit(text,((150 - (text_x / 2)),(50 - (text_y / 2))))
 
     if game_Status == 1 or game_Status == 2:
         if button.buttonPress(325, 25, 150, 50, RED, ORANGE, font, "RESET", BLACK):
-            game_Status = -1
-            game.reset(0,0,0)
+            game_Status = 0
+            game.reset(ROWS,COLUMNS,MINES)
 
 
 def menu():
@@ -128,10 +131,10 @@ def menu():
     screen.blit(text, ((250-(text_x / 2)),(100-(text_y / 2))))
 
     if button.buttonPress(200,250,100,50,RED,ORANGE,font,"BEGIN",BLACK):
-        game_Status = 0
+        game_Status = 2
 
 #working on fix for this
-def custom():
+"""def custom():
     global cColumns, cRows, cMines, game_Status
     text = font.render("Columns: " + str(cColumns),True,BLACK)
     text_x = text.get_rect().width
@@ -166,7 +169,7 @@ def custom():
     if button.buttonPress(300, 390, 100, 60, RED, ORANGE,font,"Start",BLACK):
         game.reset(cColumns, cRows, cMines)
         game_Status = 0
-
+"""
 
 class Tile(object):
     def __init__(self, x, y, columns, rows):
@@ -370,8 +373,7 @@ class Game(object):
                         self.neighbnum += 1
                 self.board[y][x].neighbors = self.neighbnum
 
-ROWS = COLUMNS = 10
-MINES = 5
+
 game = Game(ROWS,COLUMNS,MINES)
 
 # loop for running window
