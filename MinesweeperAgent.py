@@ -7,7 +7,7 @@ from enum import Enum
 class MineSweeperAgent:
 
     def __init__(self):
-        height,width,num_mines = (5,5,5)
+        height,width,num_mines = (10,10,20)
 
         self.height = height
         self.width = width
