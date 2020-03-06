@@ -13,6 +13,8 @@ ORANGE = 255, 127, 0
 YELLOW = 255, 255, 0
 WHITE = 255, 255, 255
 GREEN = 0, 255,0
+BLUE = 0,72,186
+AMBER = 255,191,0
 
 # Graphical window constants
 WIDTH = 500
@@ -23,7 +25,7 @@ size = (WIDTH, HEIGHT)
 screen = pygame.display.set_mode(size)
 
 # Graphical window caption
-pygame.display.set_caption('Minesweeper')
+pygame.display.set_caption('Minesweeper Environment')
 
 # loop flag
 DONE = False
@@ -32,7 +34,7 @@ DONE = False
 clock = pygame.time.Clock()
 
 # create a Font object
-font = pygame.font.Font("COMICATE.ttf", 20)
+font = pygame.font.Font("game_over.ttf", 50)
 
 # mouse variables
 mouse_Status = 0
@@ -40,16 +42,15 @@ mouse_x = 0
 mouse_y = 0
 
 # grid variables
-cColumns = 0
-cRows = 0
-cMines = 0
+dimension = 0
+input_mines = 0
 
 # game status
 game_Status = -1
 
 # constants for game
-ROWS = COLUMNS = 10
-MINES = 15
+ROWS = COLUMNS = 5
+MINES = 10
 
 class Button(object):
     def __init__(self):
@@ -117,59 +118,50 @@ def infoBar():
         screen.blit(text,((150 - (text_x / 2)),(50 - (text_y / 2))))
 
     if game_Status == 1 or game_Status == 2:
-        if button.buttonPress(325, 25, 150, 50, RED, ORANGE, font, "RESET", BLACK):
-            game_Status = 0
-            game.reset(ROWS,COLUMNS,MINES)
+        if button.buttonPress(325, 25, 150, 50, BLUE, AMBER, font, "RESET", BLACK):
+            game_Status = -1
+            game.reset(0,0,0)
 
 
 def menu():
     global game_Status
-    screen.fill(WHITE)
+    screen.fill(GREY)
     text = font.render("Mine Sweeper",True,BLACK)
     text_x = text.get_rect().width
     text_y = text.get_rect().height
-    screen.blit(text, ((250-(text_x / 2)),(100-(text_y / 2))))
+    screen.blit(text, ((250-(text_x / 2)),(200-(text_y / 2))))
 
-    if button.buttonPress(200,250,100,50,RED,ORANGE,font,"BEGIN",BLACK):
-        game_Status = 2
+    if button.buttonPress(200,250,100,50,BLUE,AMBER,font,"BEGIN",BLACK):
+        game_Status = -2
 
 #working on fix for this
-"""def custom():
-    global cColumns, cRows, cMines, game_Status
-    text = font.render("Columns: " + str(cColumns),True,BLACK)
+def custom():
+    global dimension,input_mines,game_Status
+    screen.fill(GREY)
+    text = font.render("Dimension: " + str(dimension),True,BLACK)
     text_x = text.get_rect().width
     text_y = text.get_rect().height
     screen.blit(text, ((225 - (text_x / 2)), (180 - (text_y / 2))))
-    if button.buttonPress(300, 160, 20, 20, RED, ORANGE, font, " /\ ", BLACK):
-        if cColumns < 20:
-            cColumns += 1
-    if button.buttonPress(300, 180, 20, 20, RED, ORANGE, font, " \/ ", BLACK):
-        if cColumns > 0:
-            cColumns -= 1
-    text = font.render("Rows: ", + str(cRows),True,BLACK)
+    if button.buttonPress(300,160,20,20,BLUE,AMBER,font,"U", BLACK):
+        if dimension < 20:
+            dimension += 1
+    if button.buttonPress(300,190,20,20,BLUE,AMBER,font,"D",BLACK):
+        if dimension > 0:
+            dimension -= 1
+    text = font.render("Mines: " + str(input_mines),True,BLACK)
     text_x = text.get_rect().width
     text_y = text.get_rect().height
     screen.blit(text, ((230 - (text_x / 2)), (260 - (text_y / 2))))
-    if button.buttonPress(300, 240, 20, 20, RED, ORANGE, font, " /\ ", BLACK):
-        if cRows < 20:
-            cRows += 1
-    if button.buttonPress(300, 260, 20, 20, RED, ORANGE, font, " \/ ", BLACK):
-        if cRows > 0:
-            cRows -= 1
-    text = font.render("Mines: " + str(cMines),True,BLACK)
-    text_x = text.get_rect().width
-    text_y = text.get_rect().height
-    screen.blit(text, ((230 - (text_x / 2)), (340 - (text_y / 2))))
-    if button.buttonPress(300, 320, 20, 20, RED, ORANGE, font, " /\ ", BLACK):
-        if cMines < 50 and cMines < (cColumns * cRows):
-            cMines += 1
-    if button.buttonPress(300, 340, 20, 20, RED, ORANGE, font, " \/ ", BLACK):
-        if cMines > 0:
-            cMines -= 1
-    if button.buttonPress(300, 390, 100, 60, RED, ORANGE,font,"Start",BLACK):
-        game.reset(cColumns, cRows, cMines)
+    if button.buttonPress(300, 240, 20, 20, BLUE, AMBER, font, " U ", BLACK):
+        if input_mines < 50 and input_mines < (dimension * dimension):
+            input_mines += 1
+    if button.buttonPress(300, 270, 20, 20, BLUE, AMBER, font, " D ", BLACK):
+        if input_mines > 0:
+            input_mines -= 1
+    if button.buttonPress(300, 390, 100, 60, BLUE, AMBER,font,"Start",BLACK):
+        game.reset(dimension, dimension, input_mines)
         game_Status = 0
-"""
+
 
 class Tile(object):
     def __init__(self, x, y, columns, rows):
@@ -206,7 +198,7 @@ class Tile(object):
                     text = font.render(str(self.neighbors),True,BLACK)
                     text_x = text.get_rect().width
                     text_y = text.get_rect().height
-                    screen.blit(text, ((self.x + ((size[0] / self.columns) / 2) - (text_x / 2)),
+                    screen.blit(text,((self.x + ((size[0] / self.columns) / 2) - (text_x / 2)),
                                        (self.y + (((size[1] - 100) / self.rows) / 2) - (text_y / 2))))
 
             elif self.mine == True:
@@ -278,7 +270,7 @@ class Game(object):
         self.foundMines = 0
         for y in range(self.rows):
             for x in range(self.columns):
-                self.board[x][y].update()
+                self.board[y][x].update()
                 if self.board[y][x] == 0 and self.board[y][x].visible == True:
                     if y > 0 and x > 0:
                         self.board[y - 1][x - 1].visible = True
@@ -300,16 +292,16 @@ class Game(object):
                     self.num_flagged += 1
                 if self.board[y][x].visible == True:
                     self.numvis += 1
-            for mine in self.mines:
-                if self.board[mine[1]][mine[0]].flag == True:
-                    self.foundMines += 1
-                if self.num_flagged == self.total_mines and self.foundMines == self.total_mines and self.numvis == (
-                    (self.columns * self.rows) - self.total_mines):
-                    game_Status = 1
-                if game_Status == 1 or game_Status == 2:
-                    for y in range(self.rows):
-                        for x in range(self.columns):
-                            self.board[y][x].visible = True
+        for mine in self.mines:
+            if self.board[mine[1]][mine[0]].flag == True:
+                self.foundMines += 1
+        if self.num_flagged == self.total_mines and self.foundMines == self.total_mines and self.numvis == (
+            (self.columns * self.rows) - self.total_mines):
+            game_Status = 1
+        if game_Status == 1 or game_Status == 2:
+            for y in range(self.rows):
+                for x in range(self.columns):
+                    self.board[y][x].visible = True
 
     def render(self):
         for y in range(self.rows):
@@ -348,28 +340,28 @@ class Game(object):
             for x in range(self.columns):
                 self.neighbnum = 0
                 if y > 0 and x > 0:
-                    if self.board[y - 1][x - 1].mine == True:
+                    if self.board[y-1][x-1].mine == True:
                         self.neighbnum += 1
                 if y > 0:
-                    if self.board[y - 1][x].mine == True:
+                    if self.board[y-1][x].mine == True:
                         self.neighbnum += 1
                 if y > 0 and x < (self.columns - 1):
-                    if self.board[y - 1][x + 1].mine == True:
+                    if self.board[y-1][x+1].mine == True:
                         self.neighbnum += 1
                 if x > 0:
-                    if self.board[y][x - 1].mine == True:
+                    if self.board[y][x-1].mine == True:
                         self.neighbnum += 1
-                if x < (self.columns - 1):
-                    if self.board[y][x + 1].mine == True:
+                if x < (self.columns-1):
+                    if self.board[y][x+1].mine == True:
                         self.neighbnum += 1
-                if x > 0 and y < (self.rows - 1):
-                    if self.board[y + 1][x - 1].mine == True:
+                if x > 0 and y < (self.rows-1):
+                    if self.board[y+1][x-1].mine == True:
                         self.neighbnum += 1
-                if y < (self.rows - 1):
-                    if self.board[y + 1][x].mine == True:
+                if y < (self.rows-1):
+                    if self.board[y+1][x].mine == True:
                         self.neighbnum += 1
-                if x < (self.columns - 1) and y < (self.rows - 1):
-                    if self.board[y + 1][x + 1].mine == True:
+                if x < (self.columns-1) and y < (self.rows - 1):
+                    if self.board[y+1][x+1].mine == True:
                         self.neighbnum += 1
                 self.board[y][x].neighbors = self.neighbnum
 
@@ -402,7 +394,8 @@ while DONE is not (True):
         game.update()
         game.render()
 
-        pygame.display.flip()
+    pygame.display.flip()
 
-        clock.tick(60)
+    clock.tick(60)
+
 pygame.quit()
