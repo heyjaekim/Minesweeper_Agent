@@ -194,7 +194,7 @@ class Tile(object):
         if self.visible == True:
             if self.mine == False:
                 pygame.draw.rect(screen,GREY,(self.x, self.y, (size[0] / self.columns), ((size[1] - 100) / self.rows)))
-                if self.neighbors > 0:
+                if self.neighbors >= 0:
                     text = font.render(str(self.neighbors),True,BLACK)
                     text_x = text.get_rect().width
                     text_y = text.get_rect().height
