@@ -25,10 +25,10 @@ class KB():
                     str(self.mismatched_tiles[i].adj_mines))
 
     def isValid(self, x, y):
-        if(x < 0 or x >= self.width) or (y<0 or y >= self.height):
-            return False
+        if(0 <= x < self.width) and (0 <= y < self.height):
+            return True
         else:
-            return True        
+            return False        
 
     def is_mine_or_clear(self):
 

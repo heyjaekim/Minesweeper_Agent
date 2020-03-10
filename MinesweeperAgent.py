@@ -7,14 +7,16 @@ from enum import Enum
 class MineSweeperAgent:
 
     def __init__(self):
-        height,width,num_mines = (10,10,20)
+        height,width,num_mines = (10,10,10)
 
         self.height = height
         self.width = width
         self.kb = KB(height, width)
         self.gamesetting = GameSetting(height, width, num_mines)
+        self.won = True
+        self.identified_num = 0
         self.gameover = False
-        self.won = False
+        self.steps = 0
 
     def startGame(self):
         # decide on which tile to query
@@ -37,7 +39,7 @@ class MineSweeperAgent:
         
         for tile in adj_unvisited:
             fringe.add(tile)
-        while not self.gameover:
+        while self.identified_num < self.height * self.width:
             print("")
 
             if len(unvisited_clr_tiles) != 0:
@@ -51,10 +53,11 @@ class MineSweeperAgent:
                 tile = unvisited_clr_tiles.pop()
                 self.checkQuery(tile.x,tile.y)
                 print("Visiting tile: "+tile.coord_str()) #print("Visiting tile adj_mines: " + tile.adj_mines)
+                
                 if(self.gameover is True):
                     tile.blowup = True
-                    print("terminate")
-                    break
+                    #print("BLEW UP THE BOMB")
+                
                 adj_unvisited = self.kb.get_hidden_adj_tiles(tile)
                 for t in adj_unvisited:
                     fringe.add(t)
@@ -99,27 +102,30 @@ class MineSweeperAgent:
                         if(self.kb.tile_arr[i][j].is_mined is ID.hidden):
                             candidates.append(self.kb.tile_arr[i][j])
                 if len(candidates) == 0:
-                    self.gameover = True
-                    self.won = True
+                    #self.gameover = True
+                    #self.won = True
                     break
                 print("guess -surroundded by mines")
                 rand_index = random.randint(0, len(candidates) - 1)
                 chosen = candidates[rand_index]
                 unvisited_clr_tiles.add(chosen)
 
+        self.kb.drawGrid()
+
         if self.won:
             print("WINNER WINNER CHICKEN DINNER")
+            print("SUCCESSFUL STEPS: " + str(self.steps))
         else:
-            print("GAMEOVER")
-        self.kb.drawGrid()
+            print("AGENT BLEW UP THE BOMB")
+            print("SUCCESSFUL STEPS: " + str(self.steps))
         return
 
     def checkNum(self, num, cur_tile):
         if num == 9:
-            print("gameover x = " + str(cur_tile.x))
-            print("gameover y = " + str(cur_tile.y))
-            self.gameover = True
+            print("Blew up at x = " + str(cur_tile.x))
+            print("Blew up at y = " + str(cur_tile.y))
             self.won = False
+            self.gameover = True
             return
         elif num >= 0 and num <= 8:
             self.kb.visitCurrentTile(cur_tile, num)
@@ -132,6 +138,9 @@ class MineSweeperAgent:
         num = int(self.gamesetting.grid[x][y]) #IndexError: index 10 is out of bounds for axis 0 with size 10
         cur_tile = self.kb.tile_arr[x][y]
         self.checkNum(num, cur_tile)
+        self.identified_num += 1
+        if self.won:
+            self.steps += 1
         return cur_tile
 
     def verify_knowledgebase(self, x, y):
