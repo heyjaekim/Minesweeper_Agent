@@ -11,7 +11,7 @@ class GameSetting:
         self.generate_new_grid()
 
     def get_adjacent_count(self, x, y):
-        
+
         count = 0
         for i in [-1,0,1]:
             for j in [-1,0,1]:
@@ -62,8 +62,8 @@ class KB():
             else:
                 self.mismatched_tiles.append(tile)
                 for i in range(len(self.mismatched_tiles)):
-                    print("print the mismatch tiles: x = " 
-                    + str(self.mismatched_tiles[i].x) +" y = "+ 
+                    print("print the mismatch tiles: x = "
+                    + str(self.mismatched_tiles[i].x) +" y = "+
                     str(self.mismatched_tiles[i].y) + " adj_mines = "+
                     str(self.mismatched_tiles[i].adj_mines))
 
@@ -71,7 +71,7 @@ class KB():
         if(0 <= x < self.dim) and (0 <= y < self.dim):
             return True
         else:
-            return False        
+            return False
 
     def is_mine_or_clear(self):
 
@@ -84,11 +84,11 @@ class KB():
                 for j in [-1,0,1]:
                     x, y = unsat_tile.x+i, unsat_tile.y+j
                     if (self.isValid(x, y) and self.tile_arr[x][y].is_mined is ID.hidden):
-                        
+
                         #the tile is not mined
-                        self.tile_arr[x][y].is_mined = ID.false 
+                        self.tile_arr[x][y].is_mined = ID.false
                         potential_mines.add(self.tile_arr[x][y])
-        
+
         #condition of the possible mines: isValid, hidden.
         potential_mines = list(potential_mines)
         prev_mine_list = []
@@ -111,13 +111,13 @@ class KB():
             subset_end += 1
             potential_mines[subset_end].is_mined = ID.true
             temp_mine_tile = potential_mines[subset_end]
-            #literally, potential_mine can be true or false depending on discovering 
+            #literally, potential_mine can be true or false depending on discovering
             #more mines on adjcent tiles around the the tile or not
             #ex) count = 2 but tile.adj_mines is 3, which it returns -1(potentially mine)
             prev_mine_list.append(subset_end)
 
             # Local sat
-            local_sat = self.check_local_grid(temp_mine_tile)            
+            local_sat = self.check_local_grid(temp_mine_tile)
             if local_sat <= 0:
                 #take into consideration for the temp_mine_tile as a real mine
                 continue
@@ -133,7 +133,7 @@ class KB():
         for i in [-1,0,1]:
             for j in [-1,0,1]:
                 x, y = tile.x+i, tile.y+j
-                if (self.isValid(x, y) 
+                if (self.isValid(x, y)
                     and self.tile_arr[x][y].is_mined == ID.true
                         and not (x == tile.x and y == tile.y)):
                     count += 1
@@ -147,15 +147,15 @@ class KB():
         for i in [-1,0,1]:
             for j in [-1,0,1]:
                 x, y = tile.x+i, tile.y+j
-                if (self.isValid(x, y) 
+                if (self.isValid(x, y)
                     and self.tile_arr[x][y].is_mined == ID.false
                         and not (x == tile.x and y == tile.y)):
                     count += 1
-        #count the number of hidden neighbors, every hidden neighbor is safe. 
+        #count the number of hidden neighbors, every hidden neighbor is safe.
         hidden_safe = (8 - tile.adj_mines) - count
         return hidden_safe
 
-    
+
     def check_all_grid(self):
         for x in range(self.dim):
             for y in range(self.dim):
@@ -181,12 +181,12 @@ class KB():
                     if hiddenMines > 0:
                         # too many mines, oversatisfied
                         return 1
-                   
+
                     elif hiddenMines < 0:
                         # under satisfied at one point, but don't return
                         # since it still may over satisfy at one point
                         satisfiaction = True
-        
+
         # if it is not under satisfied then it's satisfied locally
         if satisfiaction:
             return -1
@@ -213,7 +213,7 @@ class KB():
         for x in range(self.dim):
             for y in range(self.dim):
                 tile = self.tile_arr[x][y]
-                
+
                 if tile.is_mined is ID.true:
                     t += "M "
 
@@ -232,13 +232,13 @@ class KB():
         print(t)
 
     def get_hidden_adj_tiles(self, tile):
-        
+
         adj_tiles = []
         for i in [-1,0,1]:
             for j in [-1,0,1]:
                 x, y = tile.x+i, tile.y+j
-                if (self.isValid(x, y) 
-                    and self.tile_arr[x][y].is_mined is ID.hidden 
+                if (self.isValid(x, y)
+                    and self.tile_arr[x][y].is_mined is ID.hidden
                         and not(x == tile.x and y == tile.y)):
                     adj_tiles.append(self.tile_arr[x][y])
         return adj_tiles

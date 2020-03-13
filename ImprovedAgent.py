@@ -25,8 +25,8 @@ class ImprovedAgent(object):
         if(0 <= x < self.dim) and (0 <= y < self.dim):
             return True
         else:
-            return False   
-    
+            return False
+
     def gameStart(self):
         score = 0
         #else is when we are solving the mineweeper with improved agent.
@@ -35,7 +35,7 @@ class ImprovedAgent(object):
             t = ""
             for x in range(self.dim):
                 for y in range(self.dim):
-                    
+
                     if self.env.hidden_grid[x][y] == -1:
                         t += "M "
                     elif self.env.hidden_grid[x][y] == 2:
@@ -52,36 +52,36 @@ class ImprovedAgent(object):
             print(t + "----------------------")
         return score
 
-    def inference_start(self):            
+    def inference_start(self):
         inf_state = 0
-        
+
         if self.identified_num < self.dim * self.dim:
             while self.cell_to_inference.qsize():
                 (x,y) = self.cell_to_inference.get()
                 baseline_return = self.baseline_inference(x,y)
                 if baseline_return == -1:
                     pass
-                
+
                 elif baseline_return:
                     #print("baseline")
                     inf_state = 1
                     break
                 else:
                     self.cell_unresolved.put((x,y))
-            
+
             if inf_state == 0:
                 if self.equation_inference():
                     #print("equation")
                     while self.cell_unresolved.qsize():
                         self.cell_to_inference.put(self.cell_unresolved.get())
                     inf_state = 1
-    
+
             if inf_state == 0:
                 self.checkRandomQuery()
                 while self.cell_unresolved.qsize():
                     self.cell_to_inference.put(self.cell_unresolved.get())
                 pass
-            
+
         else:
             return -1
 
@@ -94,7 +94,7 @@ class ImprovedAgent(object):
             return
         num_mines = self.board[x][y]
         identified_mines, clear_tiles, hidden_num, adj_tiles = self.get_adj_tiles_info(x, y)
-        
+
         if hidden_num == 0: #when every tiles were uncovered
             return -1
         elif num_mines - identified_mines == hidden_num:
@@ -163,7 +163,7 @@ class ImprovedAgent(object):
                             equation_left1.remove(point)
                             equation_left2.remove(point)
                         if equation_right2 > equation_right1:
-                            if len(equation_left2) == equation_right2 - equation_right1:    # after removing common neighbors, hidden cells of 2 = hidden mines of 2 - 1, 
+                            if len(equation_left2) == equation_right2 - equation_right1:    # after removing common neighbors, hidden cells of 2 = hidden mines of 2 - 1,
                                 for item in equation_left2:                             #hidden cells of 2 are all mines and hidden cells of 1 are all safe. (A + B) - (B + C) = len(A)
                                     mine_nodes.append(item)
                                 for item in equation_left1:
@@ -268,7 +268,7 @@ class ImprovedAgent(object):
 
     def count_global_hidden(self):
         count = 0
-        for i in range(self.dim): 
+        for i in range(self.dim):
             for j in range(self.dim):
                 if self.board[i][j] == 9:
                     count += 1
@@ -285,7 +285,7 @@ class ImprovedAgent(object):
             num_mines = self.board[x][y]
             identified_mines, clear_tiles, hidden_num, adj_tiles = self.get_adj_tiles_info(x, y)
             possible_mines.append(((num_mines - identified_mines) / hidden_num, (x, y)))
-        
+
         possible_mines.sort()
         while tempQ.qsize():
             self.cell_unresolved.put(tempQ.get())
@@ -298,9 +298,9 @@ class ImprovedAgent(object):
                 self.identify_tile(aim_x, aim_y)
                 return True
 
-        self.random_outside()    
+        self.random_outside()
 
- 
+
     def random_outside(self):
         covered_tiles = []
         for x in range(self.dim):

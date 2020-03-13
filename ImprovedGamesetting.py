@@ -10,7 +10,7 @@ class ImprovedSetting(object):
         self.hidden_grid = [[0 for x in range(dim)]for y in range(dim)]
         self.generate_new_grid()
         self.identified_num = 0
-        
+
 
     def get_adjacent_count(self, x, y):
         count = 0
@@ -37,13 +37,13 @@ class ImprovedSetting(object):
             if self.grid[i][j] != -1:
                 self.grid[i][j] = -1
                 num_of_mines -= 1
-        
+
         # Set the clues
         for i in range(0, self.dim):
             for j in range(0, self.dim):
                 if self.grid[i][j] != -1:
                     self.grid[i][j] = self.get_adjacent_count(i, j)
-        
+
         for i in range(self.dim):
             print(self.grid[i])
         print("--------------------------")
@@ -60,7 +60,7 @@ class ImprovedSetting(object):
 
     def mark_safe(self, tile):
         self.hidden_grid[tile[0]][tile[1]] = 2
-        
+
     def mark_uncover(self, tile):
         self.hidden_grid[tile[0]][tile[1]] = 1
         self.identified_num += 1
