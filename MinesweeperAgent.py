@@ -1,35 +1,30 @@
-from KnowledgeBase import KB, ID
-from GameSetting import GameSetting
+from GameSetting import GameSetting, KB, ID
 from copy import deepcopy
 import random
 from enum import Enum
 
 class MineSweeperAgent:
 
-    def __init__(self):
-        height,width,num_mines = (10,10,10)
-
-        self.height = height
-        self.width = width
-        self.kb = KB(height, width)
-        self.gamesetting = GameSetting(height, width, num_mines)
+    def __init__(self, dim, num_mines):
+        self.dim = dim
+        self.kb = KB(dim)
+        self.gamesetting = GameSetting(dim, num_mines)
         self.won = True
         self.identified_num = 0
         self.gameover = False
-        self.steps = 0
+        self.score = 0
 
     def startGame(self):
         # decide on which tile to query
-        # perform PBC if nothing t
         # o safely visit
         # guess if there is nothing clear and PBC on every viable option
         unvisited_clr_tiles = set()
         fringe = set() # unknown tiles that are adjacent to discovered nodes
         
         #randomly starts at the cell of the grid
-        randX, randY= random.randint(0, self.width-1), random.randint(0, self.height-1)
-        first_tile = self.checkQuery(2, 2)
-        #first_tile = self.checkQuery(randX, randY)
+        randX, randY= random.randint(0, self.dim-1), random.randint(0, self.dim-1)
+        #first_tile = self.checkQuery(2, 2)
+        first_tile = self.checkQuery(randX, randY)
         
         #Now assign below four var and lists to keep tracking the position of the uncovering cell
         prev_tile = first_tile
@@ -39,7 +34,7 @@ class MineSweeperAgent:
         
         for tile in adj_unvisited:
             fringe.add(tile)
-        while self.identified_num < self.height * self.width:
+        while self.identified_num < self.dim * self.dim:
             print("")
 
             if len(unvisited_clr_tiles) != 0:
@@ -114,11 +109,9 @@ class MineSweeperAgent:
 
         if self.won:
             print("WINNER WINNER CHICKEN DINNER")
-            print("SUCCESSFUL STEPS: " + str(self.steps))
         else:
             print("AGENT BLEW UP THE BOMB")
-            print("SUCCESSFUL STEPS: " + str(self.steps))
-        return
+        return self.score
 
     def checkNum(self, num, cur_tile):
         if num == 9:
@@ -126,6 +119,7 @@ class MineSweeperAgent:
             print("Blew up at y = " + str(cur_tile.y))
             self.won = False
             self.gameover = True
+            self.score += 1
             return
         elif num >= 0 and num <= 8:
             self.kb.visitCurrentTile(cur_tile, num)
@@ -139,8 +133,6 @@ class MineSweeperAgent:
         cur_tile = self.kb.tile_arr[x][y]
         self.checkNum(num, cur_tile)
         self.identified_num += 1
-        if self.won:
-            self.steps += 1
         return cur_tile
 
     def verify_knowledgebase(self, x, y):
@@ -175,7 +167,17 @@ class MineSweeperAgent:
 
 
 if __name__ == '__main__':
-
+    score = 0
+    blowup = 0
+    num_mines = 20
+    num_games = 10
+    dim = 10
     
-    agent = MineSweeperAgent()
-    agent.startGame()
+    for i in range(num_games):
+        agent = MineSweeperAgent(dim, num_mines)
+        num_blowup = agent.startGame()
+        blowup += num_blowup
+        score += ((num_mines - num_blowup) / num_mines)
+    print("The total # of bombs blew up is : " + str(blowup))
+    print("The score rate is " + str((score/num_games) * 100) + "%.")
+
