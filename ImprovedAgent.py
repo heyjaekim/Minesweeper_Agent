@@ -5,6 +5,9 @@ from ImprovedGamesetting import *
 from copy import deepcopy
 from itertools import combinations
 import random
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import seaborn as sns
 
 class ImprovedAgent(object):
 
@@ -32,6 +35,7 @@ class ImprovedAgent(object):
         #else is when we are solving the mineweeper with improved agent.
         while self.identified_num < self.dim * self.dim:
             score = self.inference_start()
+            '''
             t = ""
             for x in range(self.dim):
                 for y in range(self.dim):
@@ -50,6 +54,7 @@ class ImprovedAgent(object):
 
                 t += "\n"
             print(t + "----------------------")
+            '''
         return score
 
     def inference_start(self):            
@@ -312,7 +317,7 @@ class ImprovedAgent(object):
         k = random.randint(0, len(covered_tiles) - 1)
         (x, y) = covered_tiles[k]
         self.identify_tile(x,y)
-        print("random outside")
+        #print("random outside")
 
 
     def identify_tile(self, aim_x, aim_y):
@@ -324,14 +329,44 @@ class ImprovedAgent(object):
             self.cell_to_inference.put((aim_x, aim_y))
             self.identified_num += 1
 
+def iterateAgent(num_games, num_mines, dim):
+    mines = num_mines
+    iterations = 8
+    score = 0
+    avg_score = 0
+    for t in range(iterations):
+        avg_score = 0
+        score = 0
+        for i in range(num_games):
+            rendered_grid = ImprovedSetting(dim, mines)
+            imp_agent = ImprovedAgent(rendered_grid)
+            score += (imp_agent.gameStart() / mines)
+        
+        avg_score = (score / num_games) * 100
+        mines += 5
+        score = 0
+    
+    sns.set(style="whitegrid", color_codes=True)
+    plt.figure(figsize=(10,5))
+    x = np.arange(10, mines)
+
+    sns.lineplot(x,avg_score)
+    plt.xlabel("# OF THE MINE")
+    plt.ylabel("AVG SCORE PERCENTAGE (%)")
+    plt.title("AVG SCORE DISTRIBUTION PLOT FOR IMPROVED AGENT")
+    
+    plt.show()
 
 if __name__ == "__main__":
     score = 0
     num_mines = 20
     num_games = 10
     size = 10
+    
     for i in range(num_games):
         rendered_grid = ImprovedSetting(size, num_mines)
         imp_agent = ImprovedAgent(rendered_grid)
         score += (imp_agent.gameStart() / num_mines)
     print("The score rate is " + str((score/num_games) * 100) + "%.")
+    
+    iterateAgent(num_games, num_mines, size)

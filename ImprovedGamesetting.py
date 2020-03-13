@@ -43,11 +43,11 @@ class ImprovedSetting(object):
             for j in range(0, self.dim):
                 if self.grid[i][j] != -1:
                     self.grid[i][j] = self.get_adjacent_count(i, j)
-        
+        '''
         for i in range(self.dim):
             print(self.grid[i])
         print("--------------------------")
-
+        '''
     def nextStep(self):
         for i in range(self.dim):
             for j in range(self.dim):
