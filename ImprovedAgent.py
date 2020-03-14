@@ -331,35 +331,34 @@ class ImprovedAgent(object):
 
 def iterateAgent(num_games, num_mines, dim):
     mines = num_mines
-    iterations = 8
+    iterations = 14
     score = 0
-    avg_score = 0
+    avg_score = []
     for t in range(iterations):
-        avg_score = 0
-        score = 0
         for i in range(num_games):
             rendered_grid = ImprovedSetting(dim, mines)
             imp_agent = ImprovedAgent(rendered_grid)
             score += (imp_agent.gameStart() / mines)
         
-        avg_score = (score / num_games) * 100
+        avg_score.append((score / num_games) * 100)
         mines += 5
         score = 0
     
     sns.set(style="whitegrid", color_codes=True)
     plt.figure(figsize=(10,5))
-    x = np.arange(10, mines)
+    x = np.arange(10, mines, 5)
 
-    sns.lineplot(x,avg_score)
+    plt.bar(x , avg_score, width=0.8)
     plt.xlabel("# OF THE MINE")
     plt.ylabel("AVG SCORE PERCENTAGE (%)")
     plt.title("AVG SCORE DISTRIBUTION PLOT FOR IMPROVED AGENT")
+    plt.xticks(x)
     
     plt.show()
 
 if __name__ == "__main__":
     score = 0
-    num_mines = 20
+    num_mines = 10
     num_games = 10
     size = 10
     
