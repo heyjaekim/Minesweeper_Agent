@@ -1,7 +1,11 @@
 from GameSetting import GameSetting, KB, ID
 from copy import deepcopy
 import random
+import numpy as np
 from enum import Enum
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import seaborn as sns
 
 class MineSweeperAgent:
 
@@ -166,11 +170,40 @@ class MineSweeperAgent:
             return ID.false
 
 
+def iterateAgent(num_games, num_mines, dim):
+    mines = num_mines
+    iterations = 10
+    score = 0
+    avg_score = []
+    for t in range(iterations):
+        blowup = 0
+        for i in range(num_games):
+            basic_agent = MineSweeperAgent(dim, mines)
+            num_blowup = basic_agent.startGame()
+            blowup += num_blowup
+            score += ((mines - num_blowup) / mines)
+        
+        avg_score.append((score / num_games) * 100)
+        mines += 5
+        score = 0
+    
+    sns.set(style="whitegrid", color_codes=True)
+    plt.figure(figsize=(10,5))
+    x = np.arange(10, mines, 5)
+
+    plt.bar(x , avg_score, width=0.8)
+    plt.xlabel("# OF THE MINE")
+    plt.ylabel("AVG SCORE PERCENTAGE (%)")
+    plt.title("AVG SCORE DISTRIBUTION PLOT FOR IMPROVED AGENT")
+    plt.xticks(x)
+    
+    plt.show()
+
 if __name__ == '__main__':
     score = 0
     blowup = 0
-    num_mines = 20
-    num_games = 10
+    num_mines = 10
+    num_games = 5
     dim = 10
     
     for i in range(num_games):
@@ -180,4 +213,6 @@ if __name__ == '__main__':
         score += ((num_mines - num_blowup) / num_mines)
     print("The total # of bombs blew up is : " + str(blowup))
     print("The score rate is " + str((score/num_games) * 100) + "%.")
+
+    iterateAgent(num_games, num_mines, dim)
 

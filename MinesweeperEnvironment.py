@@ -37,7 +37,7 @@ DONE = False
 clock = pygame.time.Clock()
 
 # create a Font object
-font = pygame.font.Font("Arial", 50)
+font = pygame.font.Font("game_over.ttf", 50)
 
 # mouse variables
 mouse_Status = 0
