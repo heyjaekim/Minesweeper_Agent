@@ -142,17 +142,13 @@ class MineSweeperAgent:
     def verify_knowledgebase(self, x, y):
         test_kb = deepcopy(self.kb)
         cur_tile = test_kb.tile_arr[x][y]
-        # Returns a predicate on if the arg tile is mined
         if cur_tile.is_mined is not ID.hidden:
-            # Error no need to do PBC on an already known tile
             return
 
-        # Add p to KB and try to satisfy
         test_kb.flagOnTile(cur_tile)
         if test_kb.check_local_grid(cur_tile) > 0:
             P = False
         else:
-            #p1 will be true only if check_global_sat is true
             P = test_kb.is_mine_or_clear()
 
         # Add not p to KB and try to satisfy
@@ -172,7 +168,7 @@ class MineSweeperAgent:
 
 def iterateAgent(num_games, num_mines, dim):
     mines = num_mines
-    iterations = 10
+    iterations = 5
     score = 0
     avg_score = []
     for t in range(iterations):

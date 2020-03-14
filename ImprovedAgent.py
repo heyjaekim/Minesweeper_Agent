@@ -20,8 +20,8 @@ class ImprovedAgent(object):
         self.identified_num = 0
         self.finished_num = 0
         self.isHypothesis = False
-        self.final_hidden_num = []     # for hypothesis
-        self.final_num_mines = []       # for hypothesis
+        self.final_hidden_num = []   
+        self.final_num_mines = []      
         self.score = 0
 
     def isValid(self, x, y):
@@ -35,26 +35,7 @@ class ImprovedAgent(object):
         #else is when we are solving the mineweeper with improved agent.
         while self.identified_num < self.dim * self.dim:
             score = self.inference_start()
-            '''
-            t = ""
-            for x in range(self.dim):
-                for y in range(self.dim):
-
-                    if self.env.hidden_grid[x][y] == -1:
-                        t += "M "
-                    elif self.env.hidden_grid[x][y] == 2:
-                        t += "C "
-                    elif self.env.hidden_grid[x][y] == 1:
-                        if self.env.grid[x][y] == -1:
-                            t += "B "
-                        else:
-                            t += str(self.env.grid[x][y])+" "
-                    else:
-                        t += "X "
-
-                t += "\n"
-            print(t + "----------------------")
-            '''
+            
         return score
 
     def inference_start(self):
@@ -68,15 +49,13 @@ class ImprovedAgent(object):
                     pass
 
                 elif baseline_return:
-                    #print("baseline")
                     inf_state = 1
                     break
                 else:
                     self.cell_unresolved.put((x,y))
 
             if inf_state == 0:
-                if self.equation_inference():
-                    #print("equation")
+                if self.computation_inference() == 1:
                     while self.cell_unresolved.qsize():
                         self.cell_to_inference.put(self.cell_unresolved.get())
                     inf_state = 1
@@ -93,14 +72,13 @@ class ImprovedAgent(object):
         return self.score
 
 
-    #baseline inference is about to get true or false depending on the completion of the observing tile and its adj tiles
     def baseline_inference(self, x, y):
-        if self.board[x][y] == -2:     # hypothetical_inference, cell will not be in any queue
+        if self.board[x][y] == -2:     
             return
         num_mines = self.board[x][y]
         identified_mines, clear_tiles, hidden_num, adj_tiles = self.get_adj_tiles_info(x, y)
 
-        if hidden_num == 0: #when every tiles were uncovered
+        if hidden_num == 0: 
             return -1
         elif num_mines - identified_mines == hidden_num:
             for i in range(-1, 2):
@@ -130,80 +108,105 @@ class ImprovedAgent(object):
             return False
 
 
-    def equation_inference(self):
-        equation_dic = {}
+    def computation_inference(self):
+        computed_dic = {}
         tempQ = Q.Queue()
+
         while self.cell_unresolved.qsize():
             (x, y) = self.cell_unresolved.get()
             tempQ.put((x, y))
-            reveal_num_mines = 0
-            equation_left = []
+            num_mines_revealed = 0
+            hidden_tiles = []
+            
             for i in range(-1, 2):
                 for j in range(-1, 2):
                     if self.isValid(x+i, y+j) and (i != 0 or j != 0):
                         if self.board[x + i][y + j] == -1:
-                            reveal_num_mines += 1
+                            num_mines_revealed += 1
                         elif self.board[x + i][y + j] == 9:
-                            equation_left.append((x + i, y + j))
-            equation_right = self.board[x][y] - reveal_num_mines
-            equation_dic[(x, y)] = (equation_left, equation_right)  # left = hidden_cells, right = num_hidden_mines
+                            hidden_tiles.append((x + i, y + j))
+            num_adj_tiles = self.board[x][y] - num_mines_revealed
+            computed_dic[(x, y)] = (hidden_tiles, num_adj_tiles)  # left = hidden_cells, right = num_hidden_mines
+        
         while tempQ.qsize():
             self.cell_unresolved.put(tempQ.get())
-        safe_nodes = []
-        mine_nodes = []
-        equation_keylist = list(equation_dic.keys())
+        
+        cleared_tiles = []
+        mines = []
+        equation_keylist = list(computed_dic.keys())
+        
         if len(equation_keylist) > 1:
+            
             for i in range(len(equation_keylist) - 1):
+                
                 for j in range(i + 1, len(equation_keylist)):
-                    (x1, y1) = equation_keylist[i]
-                    (x2, y2) = equation_keylist[j]
-                    if abs(x2 - x1) < 3 and abs(y2 - y1) < 3:   # for all cell pairs having mutual influence
-                        (equation_left1, equation_right1) = deepcopy(equation_dic[(x1, y1)])
-                        (equation_left2, equation_right2) = deepcopy(equation_dic[(x2, y2)])
+                    (aim_x, aim_y) = equation_keylist[i]
+                    (aim_xx, aim_yy) = equation_keylist[j]
+                    
+                    if abs(aim_xx - aim_x) < 3 and abs(aim_yy - aim_y) < 3:   # for all cell pairs having mutual influence
+                        (temp_hidden_tiles, temp_adj_tiles) = deepcopy(computed_dic[(aim_x, aim_y)])
+                        (temp_hidden_tiles2, temp_adj_tiles2) = deepcopy(computed_dic[(aim_xx, aim_yy)])
                         remove_list = []
-                        for point in equation_left1:   # remove same neighbors
-                            if point in equation_left2:
+                        
+                        for point in temp_hidden_tiles:   # remove same neighbors
+                            if point in temp_hidden_tiles2:
                                 remove_list.append(point)
+                        
                         for point in remove_list:
-                            equation_left1.remove(point)
-                            equation_left2.remove(point)
-                        if equation_right2 > equation_right1:
-                            if len(equation_left2) == equation_right2 - equation_right1:    # after removing common neighbors, hidden cells of 2 = hidden mines of 2 - 1,
-                                for item in equation_left2:                             #hidden cells of 2 are all mines and hidden cells of 1 are all safe. (A + B) - (B + C) = len(A)
-                                    mine_nodes.append(item)
-                                for item in equation_left1:
-                                    safe_nodes.append(item)
-                            if len(equation_left1) == equation_right2 - equation_right1 == 0:   # (A + B) - B = 0
-                                for item in equation_left2:
-                                    safe_nodes.append(item)
-                        if equation_right2 <= equation_right1:
-                            if len(equation_left1) == equation_right1 - equation_right2:
-                                for item in equation_left1:
-                                    mine_nodes.append(item)
-                                for item in equation_left2:
-                                    safe_nodes.append(item)
-                            if len(equation_left2) == equation_right1 - equation_right2 == 0:
-                                for item in equation_left1:
-                                    safe_nodes.append(item)
-        safe_nodes = list(set(safe_nodes))
-        mine_nodes = list(set(mine_nodes))
-        if len(safe_nodes) != 0 or len(mine_nodes) != 0:
-            for nodes in safe_nodes:
+                            temp_hidden_tiles.remove(point)
+                            temp_hidden_tiles2.remove(point)
+                        
+                        (temp_adj_tiles, temp_adj_tiles2, temp_hidden_tiles, temp_hidden_tiles2, cleared_tiles, mines) = self.safety_computation(temp_adj_tiles, temp_adj_tiles2, mines, temp_hidden_tiles, temp_hidden_tiles2, cleared_tiles)
+       
+        cleared_tiles = list(set(cleared_tiles))
+        mines = list(set(mines))
+        
+        if len(cleared_tiles) != 0 or len(mines) != 0:
+       
+            for nodes in cleared_tiles:
                 (x, y) = nodes
+    
                 if self.isHypothesis:
                     self.board[x][y] = -2
                 else:
                     self.board[x][y] = self.env.processQuery(x, y, False)
                     self.cell_unresolved.put(nodes)
                 self.identified_num += 1
-            for nodes in mine_nodes:
+    
+            for nodes in mines:
                 (x, y) = nodes
                 self.board[x][y] = -1
                 self.env.mark_mine((x, y))
                 self.identified_num += 1
                 self.score += 1
-            return True
-        return False
+     
+            return 1
+    
+        return -1
+
+    def safety_computation(self, adj_tiles, adj_tiles2, mines, hiddenTiles, hiddenTiles2, clears):
+
+        if adj_tiles2 > adj_tiles:
+            if len(hiddenTiles2) == adj_tiles2 - adj_tiles:    
+                for item in hiddenTiles2:                             
+                    mines.append(item)
+                for item in hiddenTiles:
+                    clears.append(item)
+            if len(hiddenTiles) == adj_tiles2 - adj_tiles == 0:   
+                for item in hiddenTiles2:
+                    clears.append(item)
+        
+        if adj_tiles2 <= adj_tiles:
+            if len(hiddenTiles) == adj_tiles - adj_tiles2:
+                for item in hiddenTiles:
+                    mines.append(item)
+                for item in hiddenTiles2:
+                    clears.append(item)
+            if len(hiddenTiles2) == adj_tiles - adj_tiles2 == 0:
+                for item in hiddenTiles:
+                    clears.append(item)
+
+        return adj_tiles, adj_tiles2, hiddenTiles, hiddenTiles2, clears, mines
 
 
     def get_adj_tiles_info(self, x, y):
@@ -230,17 +233,25 @@ class ImprovedAgent(object):
         for i in range(-1, 2):
             for j in range(-1, 2):
                 (neighbor_x, neighbor_y) = (x+i, y+j)
-                if self.isValid(neighbor_x, neighbor_y) and self.board[neighbor_x][neighbor_y] == 9 and (i != 0 or j != 0):
+                if (self.isValid(neighbor_x, neighbor_y) 
+                    and self.board[neighbor_x][neighbor_y] == 9 
+                    and (i != 0 or j != 0)):
                     p = 0
                     cnt = 0
+                    
                     for k in range(-1, 2):
                         for l in range(-1, 2):
                             (adj_x, adj_y) = (neighbor_x + k, neighbor_y + l)
-                            if self.isValid(adj_x, adj_y) and 0 <= self.board[adj_x][adj_y] < 9 and (k != 0 or l != 0):
+                            
+                            if (self.isValid(adj_x, adj_y) 
+                                and 0 <= self.board[adj_x][adj_y] < 9 
+                                and (k != 0 or l != 0)):
+                                
                                 if self.board[adj_x][adj_y] == 0:
                                     return adj_x, adj_y
                                 reveal_num_mines = 0
                                 hidden_num = 0
+                                
                                 for n in range(-1, 2):
                                     for m in range(-1, 2):
                                         (ins_x, ins_y) = (adj_x + n, adj_y + m)
@@ -256,7 +267,6 @@ class ImprovedAgent(object):
                                 cnt += 1
                     if cnt != 0 and p / cnt <= min_p:
                         min_p = p / cnt
-                        #(aim_x, aim_y) = (x1, y1)
                         (aim_x, aim_y) = (neighbor_x, neighbor_y)
         if (aim_x, aim_y) != (0, 0):
             return aim_x, aim_y
