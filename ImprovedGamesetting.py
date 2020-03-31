@@ -65,6 +65,7 @@ class ImprovedSetting(object):
         self.hidden_grid[tile[0]][tile[1]] = 1
         self.identified_num += 1
 
+    """decide what number will be revealed after choosing to uncover or flag it for the square that is picked by agent"""
     def processQuery(self, x, y, proceed):
         if self.grid[x][y] == -1:
             self.mark_uncover((x,y))

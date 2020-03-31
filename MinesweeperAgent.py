@@ -39,19 +39,19 @@ class MineSweeperAgent:
         for tile in adj_unvisited:
             fringe.add(tile)
         while self.identified_num < self.dim * self.dim:
-            print("")
+            #print("")
 
             if len(unvisited_clr_tiles) != 0:
                 # If there are any safe nodes to go to make those moves
                 
-                print("Clear tiles:" + str(len(unvisited_clr_tiles)))                
-                print("Current state of the knowledge base")
+                #print("Clear tiles:" + str(len(unvisited_clr_tiles)))                
+                #print("Current state of the knowledge base")
                 self.kb.drawGrid()
                 print("--------------------------------------")
                 
                 tile = unvisited_clr_tiles.pop()
                 self.checkQuery(tile.x,tile.y)
-                print("Visiting tile: "+tile.coord_str()) #print("Visiting tile adj_mines: " + tile.adj_mines)
+                #print("Visiting tile: "+tile.coord_str()) #print("Visiting tile adj_mines: " + tile.adj_mines)
                 
                 if(self.gameover is True):
                     tile.blowup = True
@@ -71,12 +71,12 @@ class MineSweeperAgent:
                     if is_tile_mined is not ID.hidden:
                         if is_tile_mined is ID.true:
                             self.kb.flagOnTile(tile)
-                            print(tile.coord_str()+ " flagged as mine")
+                            #print(tile.coord_str()+ " flagged as mine")
                             #self.kb.drawGrid()
                         elif is_tile_mined is ID.false:
                             tile.is_mined = ID.false
                             unvisited_clr_tiles.add(tile)
-                            print(tile.coord_str()+ " flagged as clear")
+                            #print(tile.coord_str()+ " flagged as clear")
                             #self.kb.drawGrid()
                         removing_tiles.append(tile)
                         continue
@@ -89,7 +89,7 @@ class MineSweeperAgent:
                     # no cleared tiles (predicate false or true)
                     #print("guess - nowhere safe to go")
                     guess_tile = fringe.pop()
-                    print("guessing: "+str(guess_tile.x)+','+str(guess_tile.y))
+                    #print("guessing: "+str(guess_tile.x)+','+str(guess_tile.y))
                     unvisited_clr_tiles.add(guess_tile)
 
                 
@@ -104,12 +104,12 @@ class MineSweeperAgent:
                     #self.gameover = True
                     #self.won = True
                     break
-                print("guess -surroundded by mines")
+                #print("guess -surroundded by mines")
                 rand_index = random.randint(0, len(candidates) - 1)
                 chosen = candidates[rand_index]
                 unvisited_clr_tiles.add(chosen)
 
-        self.kb.drawGrid()
+        #self.kb.drawGrid()
 
         if self.won:
             print("WINNER WINNER CHICKEN DINNER")
@@ -119,8 +119,8 @@ class MineSweeperAgent:
 
     def checkNum(self, num, cur_tile):
         if num == 9:
-            print("Blew up at x = " + str(cur_tile.x))
-            print("Blew up at y = " + str(cur_tile.y))
+            #print("Blew up at x = " + str(cur_tile.x))
+            #print("Blew up at y = " + str(cur_tile.y))
             self.won = False
             self.gameover = True
             self.score += 1
@@ -165,10 +165,13 @@ class MineSweeperAgent:
         elif not P and notP:
             return ID.false
 
-
+"""this function will iterate to get a plot
+x-axis is representing for each of mines that is tested, increased by 5
+y-axis is representing for the score rate, ((score / num_games) * 100) """
+'''
 def iterateAgent(num_games, num_mines, dim):
     mines = num_mines
-    iterations = 5
+    iterations = 5 
     score = 0
     avg_score = []
     for t in range(iterations):
@@ -182,6 +185,7 @@ def iterateAgent(num_games, num_mines, dim):
         avg_score.append((score / num_games) * 100)
         mines += 5
         score = 0
+        print (t)
     
     sns.set(style="whitegrid", color_codes=True)
     plt.figure(figsize=(10,5))
@@ -194,21 +198,28 @@ def iterateAgent(num_games, num_mines, dim):
     plt.xticks(x)
     
     plt.show()
+'''
 
 if __name__ == '__main__':
     score = 0
     blowup = 0
-    num_mines = 10
+    num_mines = 20
     num_games = 5
     dim = 10
     
+    agent = MineSweeperAgent(dim, num_mines)
+    num_blowup = agent.startGame()
+    print("The total # of bombs blew up is : " + str(num_blowup))
+    print("The score rate is " + str((num_mines-num_blowup)/num_mines * 100) + "%.")
+   
+    """
     for i in range(num_games):
         agent = MineSweeperAgent(dim, num_mines)
         num_blowup = agent.startGame()
         blowup += num_blowup
         score += ((num_mines - num_blowup) / num_mines)
-    print("The total # of bombs blew up is : " + str(blowup))
-    print("The score rate is " + str((score/num_games) * 100) + "%.")
-
     iterateAgent(num_games, num_mines, dim)
+    """
+
+    
 

@@ -61,12 +61,13 @@ class KB():
                 return
             else:
                 self.mismatched_tiles.append(tile)
+                '''
                 for i in range(len(self.mismatched_tiles)):
                     print("print the mismatch tiles: x = "
                     + str(self.mismatched_tiles[i].x) +" y = "+
                     str(self.mismatched_tiles[i].y) + " adj_mines = "+
                     str(self.mismatched_tiles[i].adj_mines))
-
+                '''
     def isValid(self, x, y):
         if(0 <= x < self.dim) and (0 <= y < self.dim):
             return True
@@ -207,7 +208,7 @@ class KB():
                     if hiddenMines == 0:
                         #remove when adj_tile == 1?
                         self.mismatched_tiles.remove(adj_tile)
-
+    
     def drawGrid(self):
         t = ""
         for x in range(self.dim):
@@ -230,7 +231,7 @@ class KB():
                         t += "X "
             t += "\n"
         print(t)
-
+    
     def get_hidden_adj_tiles(self, tile):
 
         adj_tiles = []

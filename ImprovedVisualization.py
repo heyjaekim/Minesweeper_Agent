@@ -2,6 +2,7 @@ import tkinter as tk
 from ImprovedGamesetting import *
 from ImprovedAgent import *
 
+"""This is the visualizatio for slightly improved agent and more improved agent"""
 class Visual(tk.Frame):
 
     def __init__(self, oir_env, ag):
@@ -15,7 +16,7 @@ class Visual(tk.Frame):
         self.init_step()
         self.identified_num = 0
 
-
+    """click next function implemented for minesweeper GUI"""
     def click_next(self):
         self.env.nextStep()
         result = self.agent.inference_start()
@@ -53,11 +54,12 @@ class Visual(tk.Frame):
 
         frame2.pack()
 
-
+"""Choose the dimension size: (size, number of mines)"""
 if __name__=='__main__':
-    rendered_grid = ImprovedSetting(10, 20)
+    rendered_grid = ImprovedSetting(10, 30)
     imp_agent = ImprovedAgent(rendered_grid)
     board = Visual(rendered_grid, imp_agent)
     board.mainloop()
+
 
 
