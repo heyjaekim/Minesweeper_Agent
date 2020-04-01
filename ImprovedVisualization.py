@@ -56,10 +56,7 @@ class Visual(tk.Frame):
 
 """Choose the dimension size: (size, number of mines)"""
 if __name__=='__main__':
-    rendered_grid = ImprovedSetting(10, 30)
+    rendered_grid = ImprovedSetting(5, 15)
     imp_agent = ImprovedAgent(rendered_grid)
     board = Visual(rendered_grid, imp_agent)
     board.mainloop()
-
-
-
