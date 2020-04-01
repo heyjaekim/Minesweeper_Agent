@@ -203,7 +203,7 @@ def iterateAgent(num_games, num_mines, dim):
     plt.bar(x , avg_score, width=0.8)
     plt.xlabel("# OF THE MINE")
     plt.ylabel("AVG SCORE PERCENTAGE (%)")
-    plt.title("AVG SCORE DISTRIBUTION PLOT FOR IMPROVED AGENT")
+    plt.title("AVG SCORE DISTRIBUTION PLOT FOR BASIC AGENT")
     plt.xticks(x)
 
     plt.show()
