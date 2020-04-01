@@ -162,7 +162,7 @@ class MineSweeperAgent:
         # Add not p to KB and try to satisfy
         test_kb = deepcopy(self.kb)
         cur_tile = test_kb.tile_arr[x][y]
-        cur_tile.is_mined = ID.false;
+        cur_tile.is_mined = ID.false
         notP = test_kb.is_mine_or_clear()
 
 
