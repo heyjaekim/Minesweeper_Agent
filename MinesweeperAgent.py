@@ -221,7 +221,9 @@ if __name__ == '__main__':
     print("The total # of bombs blew up is : " + str(num_blowup))
     print("The score rate is " + str((num_mines-num_blowup)/num_mines * 100) + "%.")
 
-    """
+    # here is the code lines for rendering the plot data for basic agent.
+    # I encourage to iterate under number of 30 mines.
+    """ 
     for i in range(num_games):
         agent = MineSweeperAgent(dim, num_mines)
         num_blowup = agent.startGame()
