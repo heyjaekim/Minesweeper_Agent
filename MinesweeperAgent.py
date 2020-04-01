@@ -35,11 +35,8 @@ class MineSweeperAgent:
         #randomly starts at the cell of the grid
         randX, randY= random.randint(0, self.dim-1), random.randint(0, self.dim-1)
         first_tile = self.checkQuery(randX, randY)
-<<<<<<< HEAD
-=======
 
         #Now assign below four var and lists to keep tracking the position of the uncovering cell
->>>>>>> 529899320e74f15f6e14c487cea8e08447cbd9e2
         prev_tile = first_tile
 
         adj_unvisited = self.kb.get_hidden_adj_tiles(first_tile)
@@ -50,24 +47,14 @@ class MineSweeperAgent:
 
             if len(unvisited_clr_tiles) != 0:
                 # If there are any safe nodes to go to make those moves
-<<<<<<< HEAD
                 #print("Clear tiles:" + str(len(unvisited_clr_tiles)))                
-=======
-
-                #print("Clear tiles:" + str(len(unvisited_clr_tiles)))
->>>>>>> 529899320e74f15f6e14c487cea8e08447cbd9e2
                 #print("Current state of the knowledge base")
                 self.kb.drawGrid()
                 print("--------------------------------------")
 
                 tile = unvisited_clr_tiles.pop()
                 self.checkQuery(tile.x,tile.y)
-<<<<<<< HEAD
                 
-=======
-                #print("Visiting tile: "+tile.coord_str()) #print("Visiting tile adj_mines: " + tile.adj_mines)
-
->>>>>>> 529899320e74f15f6e14c487cea8e08447cbd9e2
                 if(self.gameover is True):
                     tile.blowup = True
                     #print("BLEW UP THE BOMB")
