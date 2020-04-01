@@ -551,5 +551,5 @@ if __name__ == "__main__":
         score += (imp_agent.gameStart() / num_mines)
     print("The score rate is " + str((score/num_games) * 100) + "%.")
     
-    #iterateImpAgent(num_games, num_mines, size)
+    iterateImpAgent(num_games, num_mines, size)
     iterateForComparison(num_games, num_mines, size)

@@ -212,9 +212,9 @@ def iterateAgent(num_games, num_mines, dim):
 if __name__ == '__main__':
     score = 0
     blowup = 0
-    num_mines = 10
+    num_mines = 20
     num_games = 5
-    dim = 5
+    dim = 10
 
     agent = MineSweeperAgent(dim, num_mines)
     num_blowup = agent.startGame()
