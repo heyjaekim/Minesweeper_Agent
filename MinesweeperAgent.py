@@ -9,6 +9,10 @@ import seaborn as sns
 
 class MineSweeperAgent:
 
+    #--------------------------------------------------------
+    # define basic self structures for basic agent
+    # argument 1 and 2 : size of the dimension, number of the mines in global
+    #--------------------------------------------------------
     def __init__(self, dim, num_mines):
         self.dim = dim
         self.kb = KB(dim)
@@ -18,32 +22,29 @@ class MineSweeperAgent:
         self.gameover = False
         self.score = 0
 
+    #--------------------------------------------------------
+    # start to decide which tile to query
+    # guess if there is nothing clear and PBC on every viable option
+    # randomly starts at the square of the board and keep iterating until everything reveals
+    #--------------------------------------------------------
     def startGame(self):
-        # decide on which tile to query
-        # o safely visit
-        # guess if there is nothing clear and PBC on every viable option
+        
         unvisited_clr_tiles = set()
         fringe = set() # unknown tiles that are adjacent to discovered nodes
         
         #randomly starts at the cell of the grid
         randX, randY= random.randint(0, self.dim-1), random.randint(0, self.dim-1)
-        #first_tile = self.checkQuery(2, 2)
         first_tile = self.checkQuery(randX, randY)
-        
-        #Now assign below four var and lists to keep tracking the position of the uncovering cell
         prev_tile = first_tile
 
-        #first tile 주변 모든 adjcent tile들을 여기에 append시킨다
         adj_unvisited = self.kb.get_hidden_adj_tiles(first_tile)
         
         for tile in adj_unvisited:
             fringe.add(tile)
         while self.identified_num < self.dim * self.dim:
-            #print("")
 
             if len(unvisited_clr_tiles) != 0:
                 # If there are any safe nodes to go to make those moves
-                
                 #print("Clear tiles:" + str(len(unvisited_clr_tiles)))                
                 #print("Current state of the knowledge base")
                 self.kb.drawGrid()
@@ -51,7 +52,6 @@ class MineSweeperAgent:
                 
                 tile = unvisited_clr_tiles.pop()
                 self.checkQuery(tile.x,tile.y)
-                #print("Visiting tile: "+tile.coord_str()) #print("Visiting tile adj_mines: " + tile.adj_mines)
                 
                 if(self.gameover is True):
                     tile.blowup = True
@@ -73,6 +73,7 @@ class MineSweeperAgent:
                             self.kb.flagOnTile(tile)
                             #print(tile.coord_str()+ " flagged as mine")
                             #self.kb.drawGrid()
+
                         elif is_tile_mined is ID.false:
                             tile.is_mined = ID.false
                             unvisited_clr_tiles.add(tile)
@@ -109,14 +110,16 @@ class MineSweeperAgent:
                 chosen = candidates[rand_index]
                 unvisited_clr_tiles.add(chosen)
 
-        #self.kb.drawGrid()
-
         if self.won:
             print("WINNER WINNER CHICKEN DINNER")
         else:
             print("AGENT BLEW UP THE BOMB")
         return self.score
 
+    #--------------------------------------------------------
+    # argument 1: assigned number in the square
+    # argument 2: current square that we are exploring
+    #--------------------------------------------------------
     def checkNum(self, num, cur_tile):
         if num == 9:
             #print("Blew up at x = " + str(cur_tile.x))
@@ -130,10 +133,13 @@ class MineSweeperAgent:
         else:
             # Error invalid num
             return
-
+    
+    #--------------------------------------------------------
+    # returns 0-8 for num of adj mines or 0 if the tile is mined
+    # argument: x and y coordinate
+    #--------------------------------------------------------
     def checkQuery(self, x, y):
-        # returns 0-8 for num of adj mines or 9 if the tile is mined
-        num = int(self.gamesetting.grid[x][y]) #IndexError: index 10 is out of bounds for axis 0 with size 10
+        num = int(self.gamesetting.grid[x][y])
         cur_tile = self.kb.tile_arr[x][y]
         self.checkNum(num, cur_tile)
         self.identified_num += 1
@@ -165,10 +171,11 @@ class MineSweeperAgent:
         elif not P and notP:
             return ID.false
 
-"""this function will iterate to get a plot
-x-axis is representing for each of mines that is tested, increased by 5
-y-axis is representing for the score rate, ((score / num_games) * 100) """
-'''
+#------------------------------------------------------------------------
+#this function will iterate to get a plot
+#x-axis is representing for each of mines that is tested, increased by 5
+#y-axis is representing for the score rate, ((score / num_games) * 100)
+#------------------------------------------------------------------------
 def iterateAgent(num_games, num_mines, dim):
     mines = num_mines
     iterations = 5 
@@ -198,7 +205,7 @@ def iterateAgent(num_games, num_mines, dim):
     plt.xticks(x)
     
     plt.show()
-'''
+
 
 if __name__ == '__main__':
     score = 0

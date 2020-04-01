@@ -11,7 +11,11 @@ import seaborn as sns
 
 class ImprovedAgent(object):
 
-    def __init__(self, env):
+    #--------------------------------------------------------
+    # define basic self structures for improved agent agent
+    # argument: game environment from improvedGameSetting.py
+    #--------------------------------------------------------
+    def __init__(self, env, imp = 0):
         self.env = env
         self.dim = self.env.dim
         self.board = [[9 for x in range(self.dim)] for y in range(self.dim)]
@@ -19,17 +23,25 @@ class ImprovedAgent(object):
         self.cell_unresolved = Q.Queue()
         self.identified_num = 0
         self.finished_num = 0
-        self.isHypothesis = False
         self.final_hidden_num = []   
         self.final_num_mines = []      
         self.score = 0
+        self.imp = imp #0 for improved agent, 1 for letting agent to know total mine num
+        self.isHypothesis = False
 
+    #--------------------------------------------------------
+    # check if the exploring square is valid tile
+    #--------------------------------------------------------
     def isValid(self, x, y):
         if(0 <= x < self.dim) and (0 <= y < self.dim):
             return True
         else:
             return False
 
+    #--------------------------------------------------------
+    # start inferencing here, and going into random query process first
+    # it will unreveal the square with multiple clues at a time
+    #--------------------------------------------------------
     def gameStart(self):
         score = 0
         #else is when we are solving the mineweeper with improved agent.
@@ -59,6 +71,12 @@ class ImprovedAgent(object):
                     while self.cell_unresolved.qsize():
                         self.cell_to_inference.put(self.cell_unresolved.get())
                     inf_state = 1
+            
+            if inf_state == 0 and self.imp == 1 and (self.count_global_mines() / self.env.num_mines ) < 0.2:
+                while self.cell_unresolved.qsize():
+                    (x, y) = self.cell_unresolved.get()
+                    if self.number_inference(x, y):
+                        inf_state = 1
 
             if inf_state == 0:
                 self.processProbQuery() #from random to select the lowest probability of the squres
@@ -71,7 +89,10 @@ class ImprovedAgent(object):
 
         return self.score
 
-
+    #--------------------------------------------------------
+    # """process baseline inference from the cell_to_inference square tiles that have found
+    # , and we update the board and queue """
+    #--------------------------------------------------------
     def baseline_inference(self, x, y):
         if self.board[x][y] == -2:     
             return
@@ -94,9 +115,12 @@ class ImprovedAgent(object):
         elif (adj_tiles - num_mines) - clear_tiles == hidden_num:
             for i in range(-1, 2):
                 for j in range(-1, 2):
+                    
                     if self.isValid(x+i, y+j) and self.board[x + i][y + j] == 9:
+                        
                         if self.isHypothesis:
                             self.board[x + i][y + j] = -2
+                            pass
                         else:
                             self.board[x + i][y + j] = self.env.processQuery(x + i, y + j, True)
                             self.cell_to_inference.put((x + i, y + j))
@@ -107,7 +131,10 @@ class ImprovedAgent(object):
         else:
             return False
 
-
+    #--------------------------------------------------------
+    # """compute each inference that is found from the baseline inference and random query process
+    # define each inference is mutually influencing and is valid enough to explore"""
+    #--------------------------------------------------------
     def computation_inference(self):
         computed_dic = {}
         tempQ = Q.Queue()
@@ -171,9 +198,9 @@ class ImprovedAgent(object):
        
             for nodes in cleared_sqrs:
                 (x, y) = nodes
-    
                 if self.isHypothesis:
                     self.board[x][y] = -2
+                    pass
                 else:
                     self.board[x][y] = self.env.processQuery(x, y, False)
                     self.cell_unresolved.put(nodes)
@@ -233,7 +260,10 @@ class ImprovedAgent(object):
                     adj_tiles -= 1
         return identified_mines, clear_tiles, hidden_num, adj_tiles
 
-    """Compute the lowest probability and then agent will choose the lowest probability square as it considered as the most safe to uncover"""
+    #--------------------------------------------------------
+    # """Compute the lowest probability and then agent will choose the lowest probability square 
+    # as it considered as the most safe to uncover"""
+    #--------------------------------------------------------
     def probability_inference(self, x, y):
         min_p = 1
         (aim_x, aim_y) = (0, 0)
@@ -298,9 +328,76 @@ class ImprovedAgent(object):
                     count += 1
         return count
 
+    #------------------------------------------------
+    # Inference for number of mines given to the agent
+    # Also keep update how many mines are left
+    #------------------------------------------------
+    def number_inference(self, x, y):
+        solutions = []  # only for the first layer
+        hidden_cells = []
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if self.isValid(x + i, y + j) and self.board[x + i][y + j] == 9:
+                    hidden_cells.append((x + i, y + j))
 
-    """Processing to compute knowledge base based on the numbers of surrounded mines for each square that is revealed."""
-    """As long as we know the probability for each square, then we """
+        # all combinations(stored in tuple format) to be set as mines            
+        mine_combs = combinations(hidden_cells, self.board[x][y]) 
+
+        for tup in mine_combs:
+            
+            agent_deepcopy = ImprovedAgent(self.env)
+            agent_deepcopy.board = deepcopy(self.board)
+            agent_deepcopy.score = deepcopy(self.score)
+            
+            for i in self.cell_to_inference.queue:
+                agent_deepcopy.cell_to_inference.put(i)
+            for j in self.cell_unresolved.queue:
+                agent_deepcopy.cell_unresolved.put(j)
+            
+            agent_deepcopy.improvement = deepcopy(self.imp)
+            agent_deepcopy.identified_num = deepcopy(self.identified_num)
+            agent_deepcopy.finished_num = deepcopy(self.finished_num)
+            agent_deepcopy.isHypothesis = True
+            agent_deepcopy.final_hidden_num = deepcopy(self.final_hidden_num)
+            agent_deepcopy.final_num_mines = deepcopy(self.final_num_mines)
+            
+            for c1 in tup:
+                (x1, y1) = c1
+                agent_deepcopy.board[x1][y1] = -1
+            for c2 in hidden_cells:
+                if c2 not in tup:
+                    (x2, y2) = c2
+                    agent_deepcopy.board[x2][y2] = -2    # hypothesis as safe
+            #agent_deepcopy.hypothetical_inference() # which does not check or say identify safe cells newly added
+            
+            #if self.isHypothesis:
+            if agent_deepcopy.isHypothesis:   
+                if agent_deepcopy.cell_unresolved:
+                    self.final_hidden_num += agent_deepcopy.final_hidden_num
+                    self.final_num_mines += agent_deepcopy.final_num_mines
+                
+                else:   # agent_branch is on the last layer of branches.
+                    self.final_hidden_num.append(agent_deepcopy.count_global_hidden()) 
+                    self.final_num_mines.append(agent_deepcopy.count_global_mines())
+            
+            # the first layer
+            else:
+                
+                for i in range(len(agent_deepcopy.final_num_mines)):
+                    if (agent_deepcopy.final_num_mines[i] <= self.env.mine_num 
+                            and agent_deepcopy.final_num_mines[i] + agent_deepcopy.final_hidden_num[i] >= self.env.mine_num):
+                        solutions.append(tup)
+                        break      # turn to next tuple
+        
+        if not solutions:
+            return False
+        
+        return True
+
+    #---------------------------------------------------------------------------------
+    #"""Processing to compute knowledge base based on the numbers of surrounded mines for each square that is revealed."""
+    #"""As long as we know the probability for each square, then we """
+    #---------------------------------------------------------------------------------
     def processProbQuery(self):
         possible_mines = []
         tempQ = Q.Queue()
@@ -318,13 +415,13 @@ class ImprovedAgent(object):
         while tempQ.qsize():
             self.cell_unresolved.put(tempQ.get())
 
-        if len(possible_mines) != 0:
+        if len(possible_mines) != 0 :
             mine_p = 1
 
             if len(possible_mines) > 1:
                 (mine_p, (x, y)) = possible_mines[randint(0,len(possible_mines)-1)]
                 if mine_p <= ( 1 - (self.count_global_mines() / self.env.num_mines)):
-                    print("process the query nearby")
+                    #print("process the query nearby")
                     (aim_x, aim_y) = self.probability_inference(x, y)
                     self.identify_tile(aim_x, aim_y)
                     return True
@@ -332,7 +429,7 @@ class ImprovedAgent(object):
             elif len(possible_mines) == 1:
                 (mine_p, (x, y)) = possible_mines[0]
                 if mine_p <= ( 1 - (self.count_global_mines() / self.env.num_mines)):
-                    print("process the query nearby")
+                    #print("process the query nearby")
                     (aim_x, aim_y) = self.probability_inference(x, y)
                     self.identify_tile(aim_x, aim_y)
                     return True
@@ -363,9 +460,9 @@ class ImprovedAgent(object):
             self.cell_to_inference.put((aim_x, aim_y))
             self.identified_num += 1
 
-def iterateAgent(num_games, num_mines, dim):
+def iterateImpAgent(num_games, num_mines, dim):
     mines = num_mines
-    iterations = 14
+    iterations = 19
     score = 0
     avg_score = []
     for t in range(iterations):
@@ -384,11 +481,62 @@ def iterateAgent(num_games, num_mines, dim):
 
     plt.bar(x , avg_score, width=0.8)
     plt.xlabel("# OF THE MINE (MINE DENSITY)")
-    plt.ylabel("AVG COST PERCENTAGE (%)")
-    plt.title("MINIMIZING COST DISTRIBUTION PLOT FOR SLIGHTLY IMPROVED AGENT")
+    plt.ylabel("AVG SCORE PERCENTAGE (%)")
+    plt.title("IMPROVED AGENT MINE DENSITY WITH AVG SCORE PERCENTAGE")
     plt.xticks(x)
     
     plt.show()
+
+def iterateForComparison(num_games, num_mines, dim):
+    mines = num_mines
+    iterations = 19
+    score = 0
+    score2 = 0
+    avg_score = []
+    avg_score2 = []
+    for t in range(iterations):
+        for i in range(num_games):
+
+            rendered_grid = ImprovedSetting(dim, mines)
+            imp_agent = ImprovedAgent(rendered_grid)
+            score += (imp_agent.gameStart() / mines)
+
+            rendered_grid2 = ImprovedSetting(dim, mines)
+            imp_agent2 = ImprovedAgent(rendered_grid2,1)
+            score2 += (imp_agent2.gameStart() / mines)
+        
+        avg_score.append((score / num_games) * 100)
+        avg_score2.append((score2 / num_games) * 100)
+        mines += 5
+        score = 0
+        score2 = 0
+    
+    fig = plt.figure(figsize=(10,5))
+    ax = fig.add_subplot(111)
+    x = np.arange(10, mines, 5)
+    width = 1.0
+
+    first_plot = ax.bar(x, avg_score, width, color = 'r')
+    second_plot = ax.bar(x + width, avg_score2, width, color = 'g')
+
+    ax.set_xlabel("# OF THE MINE (MINE DENSITY)")
+    ax.set_ylabel("AVG SCORE PERCENTAGE (%)")
+    plt.title("Plot Comparison btw Improved Agent and Agent with Num of Mines Given")
+    plt.xticks(x)
+    ax.legend( (first_plot[0], second_plot[0]), ('Improved Agent', 'Agent with num of mines given'))
+    
+    plt.show()
+
+    #sns.set(style="whitegrid", color_codes=True)
+    #plt.figure(figsize=(10,5))
+    #plt.bar(x, avg_score, avg_score, width=0.5)
+
+    #plt.xlabel("# OF THE MINE (MINE DENSITY)")
+    #plt.ylabel("AVG COST PERCENTAGE (%)")
+    #plt.title("MINIMIZING COST DISTRIBUTION PLOT FOR SLIGHTLY IMPROVED AGENT")
+    #plt.xticks(x)
+    
+    #plt.show()
 
 """Please modify four arguments for score, num_mines, num_games, size as you want"""
 if __name__ == "__main__":
@@ -403,4 +551,5 @@ if __name__ == "__main__":
         score += (imp_agent.gameStart() / num_mines)
     print("The score rate is " + str((score/num_games) * 100) + "%.")
     
-    iterateAgent(num_games, num_mines, size)
+    #iterateImpAgent(num_games, num_mines, size)
+    iterateForComparison(num_games, num_mines, size)
