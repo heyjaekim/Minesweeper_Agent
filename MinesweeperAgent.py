@@ -162,7 +162,7 @@ class MineSweeperAgent:
         # Add not p to KB and try to satisfy
         test_kb = deepcopy(self.kb)
         cur_tile = test_kb.tile_arr[x][y]
-        cur_tile.is_mined = ID.false;
+        cur_tile.is_mined = ID.false
         notP = test_kb.is_mine_or_clear()
 
 
@@ -212,16 +212,18 @@ def iterateAgent(num_games, num_mines, dim):
 if __name__ == '__main__':
     score = 0
     blowup = 0
-    num_mines = 10
+    num_mines = 20
     num_games = 5
-    dim = 5
+    dim = 10
 
     agent = MineSweeperAgent(dim, num_mines)
     num_blowup = agent.startGame()
     print("The total # of bombs blew up is : " + str(num_blowup))
     print("The score rate is " + str((num_mines-num_blowup)/num_mines * 100) + "%.")
 
-    """
+    # here is the code lines for rendering the plot data for basic agent.
+    # I encourage to iterate under number of 30 mines.
+    """ 
     for i in range(num_games):
         agent = MineSweeperAgent(dim, num_mines)
         num_blowup = agent.startGame()
