@@ -415,7 +415,7 @@ class ImprovedAgent(object):
         while tempQ.qsize():
             self.cell_unresolved.put(tempQ.get())
 
-        if len(possible_mines) != 0 :
+        if self.imp == 0 and len(possible_mines) != 0 :
             mine_p = 1
 
             if len(possible_mines) > 1:
@@ -433,6 +433,15 @@ class ImprovedAgent(object):
                     (aim_x, aim_y) = self.probability_inference(x, y)
                     self.identify_tile(aim_x, aim_y)
                     return True
+
+        if self.imp == 1 and len(possible_mines) != 0 :
+
+            (mine_p, (x, y)) = possible_mines[0]
+            if mine_p <= ( 1 - (self.count_global_mines() / self.env.num_mines)):
+                #print("process the query nearby")
+                (aim_x, aim_y) = self.probability_inference(x, y)
+                self.identify_tile(aim_x, aim_y)
+                return True
 
         self.random_outside()
 
